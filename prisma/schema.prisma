@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  plan          Plan            @default(FREE)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  snippets      RegexSnippet[]
+  folders       Folder[]
+  usageTracking UsageTracking[]
+  subscription  Subscription?
+  sharedRegex   SharedRegex[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model RegexSnippet {
+  id          String   @id @default(cuid())
+  title       String
+  pattern     String
+  flags       String   @default("")
+  description String?
+  explanation String?
+  tags        String[]
+  isPublic    Boolean  @default(false)
+  isFavorite  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId   String
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId String?
+  folder   Folder?      @relation(fields: [folderId], references: [id])
+  shared   SharedRegex?
+}
+
+model Folder {
+  id        String         @id @default(cuid())
+  name      String
+  color     String         @default("#6366f1")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  userId   String
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snippets RegexSnippet[]
+}
+
+model SharedRegex {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+
+  snippetId String       @unique
+  snippet   RegexSnippet @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UsageTracking {
+  id        String      @id @default(cuid())
+  action    UsageAction
+  date      DateTime    @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  plan               Plan               @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  stripeCustomerId   String?
+  stripeSubId        String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Plan {
+  GUEST
+  FREE
+  PRO
+  TEAM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+enum UsageAction {
+  AI_GENERATE
+  AI_EXPLAIN
+  AI_OPTIMIZE
+  SAVE_SNIPPET
+  SHARE_SNIPPET
+}

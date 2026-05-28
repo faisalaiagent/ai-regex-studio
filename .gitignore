@@ -1,4 +1,18 @@
-.next/
+# Dependencies
 node_modules/
-.env.local
+
+# Next.js build output
+.next/
+out/
+
+# Environment variables (NEVER commit these)
 .env
+.env.local
+.env.production
+
+# Debug
+npm-debug.log*
+
+# Misc
+.DS_Store
+*.tsbuildinfo

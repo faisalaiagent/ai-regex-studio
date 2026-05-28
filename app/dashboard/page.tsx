@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
+
 import { Navbar } from "@/components/layout/navbar";
 import Link from "next/link";
 import { Zap, TestTube, BookOpen, FolderOpen, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "Dashboard — AI Regex Studio",
-};
+"use client";
 
 const QUICK_ACTIONS = [
   { href: "/generator", label: "Generate Regex", desc: "AI-powered pattern generation", icon: Zap, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },

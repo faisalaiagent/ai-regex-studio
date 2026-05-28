@@ -182,7 +182,7 @@ export function RegexTester() {
               {result?.matchCount ?? 0} match{result?.matchCount !== 1 ? "es" : ""}
             </span>
           </div>
-          {result?.matches?.length > 0 && (
+          {(result?.matches?.length ?? 0) > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -220,7 +220,7 @@ export function RegexTester() {
                 className="font-mono text-sm leading-relaxed break-all text-foreground/90 mb-4 p-3 rounded-lg bg-background/50"
                 dangerouslySetInnerHTML={{ __html: highlightText(testText) }}
               />
-              {result?.matches?.length > 0 && (
+              {(result?.matches?.length ?? 0) > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground mb-2">Individual matches:</p>
                   {result.matches.map((m, i) => (

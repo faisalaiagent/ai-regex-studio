@@ -186,7 +186,7 @@ export function RegexTester() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigator.clipboard.writeText(result.matches.map((m) => m.value).join("\n"))}
+              onClick={() => navigator.clipboard.writeText((result?.matches ?? []).map((m) => m.value).join("\n"))}
               className="h-7 text-xs gap-1.5"
             >
               <Copy className="h-3 w-3" /> Copy all
@@ -223,7 +223,7 @@ export function RegexTester() {
               {(result?.matches?.length ?? 0) > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground mb-2">Individual matches:</p>
-                  {result.matches.map((m, i) => (
+                  {(result?.matches ?? []).map((m, i) => (
                     <div key={i} className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/3 p-2.5">
                       <Badge variant="outline" className="text-xs bg-cyan-500/10 border-cyan-500/30 text-cyan-400 flex-shrink-0">
                         {i + 1}

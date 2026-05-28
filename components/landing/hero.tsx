@@ -37,7 +37,7 @@ export function LandingHero() {
               className="mb-6 border-cyan-500/30 bg-cyan-500/5 text-cyan-400 px-4 py-1.5 text-sm font-medium gap-1.5"
             >
               <Sparkles className="h-3 w-3" />
-              Powered by Gemini AI
+              Powered by Shah Faisal Estate
               <span className="ml-1 rounded bg-cyan-500/20 px-1.5 py-0.5 text-xs">New</span>
             </Badge>
           </motion.div>

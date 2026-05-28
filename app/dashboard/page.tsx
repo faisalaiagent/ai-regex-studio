@@ -1,10 +1,8 @@
-
-import { Navbar } from "@/components/layout/navbar";
-import Link from "next/link";
-import { Zap, TestTube, BookOpen, FolderOpen, Sparkles, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
 "use client";
+
+import Link from "next/link";
+import { ... } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const QUICK_ACTIONS = [
   { href: "/generator", label: "Generate Regex", desc: "AI-powered pattern generation", icon: Zap, color: "text-cyan-400", bg: "bg-cyan-500/10 border-cyan-500/20" },

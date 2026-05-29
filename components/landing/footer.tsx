@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Code2, Github, Twitter } from "lucide-react";
+import { Code2 } from "lucide-react";
 
 export function LandingFooter() {
   return (
@@ -46,18 +46,10 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 pt-8">
+        <div className="mt-12 flex items-center justify-center border-t border-white/5 pt-8">
           <p className="text-xs text-muted-foreground">
             © 2025 AI Regex Studio. Open source. Built for developers.
           </p>
-          <div className="flex items-center gap-3">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Github className="h-4 w-4" />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Twitter className="h-4 w-4" />
-            </a>
-          </div>
         </div>
       </div>
     </footer>

@@ -14,20 +14,28 @@ export async function POST(req: NextRequest) {
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid pattern" },
+        { error: "Invalid pattern." },
         { status: 400 }
       );
     }
 
     const { pattern, flags } = parsed.data;
 
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "Gemini API key is not configured on the server." },
+        { status: 500 }
+      );
+    }
+
     const result = await explainRegex(pattern, flags);
 
     return NextResponse.json({ result });
   } catch (error) {
-    console.error("Regex explain error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Explain route error:", message);
     return NextResponse.json(
-      { error: "Failed to explain regex. Please try again." },
+      { error: message },
       { status: 500 }
     );
   }

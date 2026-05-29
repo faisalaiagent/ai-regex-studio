@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { generateRegex } from "@/lib/gemini";
 import { z } from "zod";
 
@@ -21,7 +20,13 @@ export async function POST(req: NextRequest) {
 
     const { prompt } = parsed.data;
 
-    // Generate regex with Gemini AI
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "Gemini API key is not configured on the server." },
+        { status: 500 }
+      );
+    }
+
     const result = await generateRegex(prompt);
 
     return NextResponse.json({
@@ -29,9 +34,10 @@ export async function POST(req: NextRequest) {
       usage: { used: 1, limit: 3 },
     });
   } catch (error) {
-    console.error("Regex generation error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Generate route error:", message);
     return NextResponse.json(
-      { error: "Failed to generate regex. Please try again." },
+      { error: message },
       { status: 500 }
     );
   }

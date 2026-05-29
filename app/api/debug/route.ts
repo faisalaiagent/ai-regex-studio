@@ -1,48 +1,52 @@
 import { NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function GET() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
 
-  // Check 1: Is the key present?
   if (!apiKey) {
     return NextResponse.json({
       status: "FAIL",
-      step: "ENV_CHECK",
-      error: "GEMINI_API_KEY is not set in environment variables",
+      error: "GROQ_API_KEY is not set in Vercel environment variables.",
     });
   }
 
-  // Check 2: Is the key format correct?
-  if (!apiKey.startsWith("AIza")) {
+  if (!apiKey.startsWith("gsk_")) {
     return NextResponse.json({
       status: "FAIL",
-      step: "KEY_FORMAT",
-      error: "API key format looks wrong. Should start with AIza...",
+      error: "API key format looks wrong. Groq keys start with gsk_...",
       keyPreview: apiKey.substring(0, 6) + "...",
     });
   }
 
-  // Check 3: Try calling Gemini API
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent("Say hello in one word.");
-    const text = result.response.text();
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: "Say hello in one word." }],
+        max_tokens: 10,
+      }),
+    });
 
+    if (!response.ok) {
+      const err = await response.text();
+      return NextResponse.json({ status: "FAIL", error: err });
+    }
+
+    const data = await response.json();
     return NextResponse.json({
       status: "SUCCESS",
-      message: "Gemini API is working correctly!",
-      testResponse: text,
-      keyPreview: apiKey.substring(0, 8) + "...",
+      message: "Groq API is working!",
+      testResponse: data.choices[0].message.content,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
     return NextResponse.json({
       status: "FAIL",
-      step: "API_CALL",
-      error: message,
-      keyPreview: apiKey.substring(0, 8) + "...",
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 }

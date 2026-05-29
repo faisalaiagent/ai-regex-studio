@@ -143,7 +143,7 @@ export default function BlogPost4() {
               <p>{"'$100 and €200'.match(/(?<=[€$])\\d+/g)  // ['100', '200']"}</p>
               <p className="mt-2 text-muted-foreground"># Python - supports lookbehind but must be fixed-length</p>
               <p>{"re.findall(r'(?<=[€$])\\d+', '$100 and €200')"}</p>
-              <p className="text-muted-foreground mt-1"># This works, but r'(?<=[$€]{1,2})\d+' would FAIL in Python</p>
+              <p className="text-muted-foreground mt-1">{"# This works, but r'(?<=[€$]{1,2})\\d+' would FAIL in Python"}</p>
             </div>
             <p className="mt-3">Python requires lookbehind patterns to be fixed-width — you cannot use quantifiers like + or * inside them. JavaScript ES2018 removed this limitation. If you need variable-length lookbehinds, JavaScript is your better option.</p>
           </section>

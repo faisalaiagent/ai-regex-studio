@@ -20,7 +20,7 @@ export default function BlogPost1() {
           </div>
           <h1 className="text-3xl font-bold leading-tight mb-4">Regex for Beginners: A Complete Guide</h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            If you have ever stared at a wall of symbols like <code className="bg-white/10 rounded px-1.5 py-0.5 text-cyan-300 font-mono text-sm">^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$</code> and felt completely lost — you are not alone. Regular expressions look intimidating at first. But once you understand the building blocks, they become one of the most powerful tools in a developer toolkit.
+            If you have ever stared at a wall of symbols like <code className="bg-white/10 rounded px-1.5 py-0.5 text-cyan-300 font-mono text-sm">{"^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"}</code> and felt completely lost — you are not alone. Regular expressions look intimidating at first. But once you understand the building blocks, they become one of the most powerful tools in a developer toolkit.
           </p>
         </div>
 

@@ -8,6 +8,21 @@ export const metadata: Metadata = {
   description: "Named groups, lookbehinds, flag syntax — a practical side-by-side comparison of regex in JavaScript and Python with real code examples.",
 };
 
+const CODE = {
+  jsLiteral: "// Regex literal (preferred)\nconst pattern = /\\d+/g;\n\n// RegExp constructor (use for dynamic patterns)\nconst pattern2 = new RegExp('\\\\d+', 'g');",
+  pyRaw: "import re\n\n# Raw string (recommended — avoids double backslash)\npattern = re.compile(r'\\d+')\n\n# Without raw string — needs double backslashes\npattern2 = re.compile('\\\\d+')",
+  verboseMode: "pattern = re.compile(r\"\"\"\n    \\d{4}    # year\n    -        # separator\n    \\d{2}    # month\n    -        # separator\n    \\d{2}    # day\n\"\"\", re.VERBOSE)",
+  testMatch: "// JavaScript\n/\\d+/.test('abc123')  // true\n\n# Python\nbool(re.search(r'\\d+', 'abc123'))  # True\nbool(re.match(r'\\d+', 'abc123'))   # False — match() checks from start only",
+  findAll: "// JavaScript — returns array\n'a1 b2 c3'.match(/\\d/g)  // ['1', '2', '3']\n\n# Python — findall returns list\nre.findall(r'\\d', 'a1 b2 c3')  # ['1', '2', '3']",
+  replace: "// JavaScript\n'hello world'.replace(/\\w+/g, 'x')  // 'x x'\n\n# Python\nre.sub(r'\\w+', 'x', 'hello world')  # 'x x'",
+  namedJS: "// JavaScript — uses (?<name>)\nconst m = '2025-01-15'.match(\n  /(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})/\n);\nm.groups.year   // '2025'\nm.groups.month  // '01'",
+  namedPY: "# Python — uses (?P<name>)\nm = re.match(\n  r'(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2})',\n  '2025-01-15'\n)\nm.group('year')   # '2025'\nm.group('month')  # '01'",
+  lookbehindJS: "// JavaScript (ES2018+) — variable-length lookbehind works\n'$100 and €200'.match(/(?<=[€$])\\d+/g)  // ['100', '200']",
+  lookbehindPY: "# Python — lookbehind must be fixed-width\nre.findall(r'(?<=[€$])\\d+', '$100 and €200')\n# NOTE: (?<=[€$]{1,2}) would FAIL in Python — no variable width",
+  unicodeJS: "// JavaScript — needs 'u' flag for emoji\n/^.$/u.test('😀')  // true  (with u flag)\n/^.$/.test('😀')   // false (without u flag)",
+  unicodePY: "# Python 3 — Unicode works naturally, no flag needed\nbool(re.match(r'^.$', '😀'))  # True",
+};
+
 export default function BlogPost4() {
   return (
     <div className="min-h-screen bg-background">
@@ -20,7 +35,7 @@ export default function BlogPost4() {
           </div>
           <h1 className="text-3xl font-bold leading-tight mb-4">JavaScript vs Python Regex: Key Differences</h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            If you know regex in one language and switch to another, most of your knowledge transfers directly. But there are some real differences between JavaScript and Python that will catch you off guard if you are not aware of them. This guide covers every important difference with side-by-side code examples.
+            If you know regex in one language and switch to another, most of your knowledge transfers directly. But there are real differences between JavaScript and Python that will catch you off guard. This guide covers every important difference with side-by-side code examples.
           </p>
         </div>
 
@@ -28,33 +43,23 @@ export default function BlogPost4() {
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Syntax: How You Write a Regex</h2>
-            <p>The first difference you will notice is how patterns are written in code.</p>
 
             <h3 className="text-base font-semibold text-foreground mt-5 mb-2">JavaScript</h3>
-            <p>JavaScript has regex literals built into the language, written between forward slashes. You can also create regex objects using the RegExp constructor.</p>
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-1">
-              <p className="text-muted-foreground">// Regex literal (preferred)</p>
-              <p>const pattern = /\d+/g;</p>
-              <p className="mt-2 text-muted-foreground">// RegExp constructor (use when pattern is dynamic)</p>
-              <p>const pattern = new RegExp("\\d+", "g");</p>
-            </div>
+            <p>JavaScript has regex literals built into the language, written between forward slashes. You can also use the RegExp constructor for dynamic patterns.</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.jsLiteral}</div>
 
             <h3 className="text-base font-semibold text-foreground mt-5 mb-2">Python</h3>
             <p>Python has no regex literals. You always use the re module. Raw strings (prefixed with r) are strongly recommended to avoid double-escaping backslashes.</p>
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-1">
-              <p>import re</p>
-              <p className="mt-2 text-muted-foreground"># Raw string (recommended)</p>
-              <p>pattern = re.compile(r"\d+")</p>
-              <p className="mt-2 text-muted-foreground"># Without raw string - need double backslashes</p>
-              <p>pattern = re.compile("\\d+")</p>
-            </div>
-            <p className="mt-3">The raw string prefix r is one of Python's most important regex habits. Without it, you end up writing \\\\n when you mean \\n, and things get confusing fast.</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.pyRaw}</div>
+            <p className="mt-3">The raw string prefix r is one of Python's most important regex habits. Without it, writing patterns with backslashes quickly becomes confusing.</p>
+
+            <h3 className="text-base font-semibold text-foreground mt-5 mb-2">Python Verbose Mode</h3>
+            <p>Python has a unique verbose mode that lets you write regex across multiple lines with comments — very useful for complex patterns.</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.verboseMode}</div>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Flags: Same Concept, Different Syntax</h2>
-            <p>Both languages support the same set of core flags but write them differently.</p>
-
             <div className="mt-3 rounded-lg border border-white/10 overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
@@ -65,100 +70,50 @@ export default function BlogPost4() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <tr><td className="p-3">Case insensitive</td><td className="p-3 font-mono text-cyan-300">/pattern/i</td><td className="p-3 font-mono text-cyan-300">re.IGNORECASE or re.I</td></tr>
-                  <tr><td className="p-3">Global (find all)</td><td className="p-3 font-mono text-cyan-300">/pattern/g</td><td className="p-3 font-mono text-cyan-300">re.findall() or re.finditer()</td></tr>
-                  <tr><td className="p-3">Multiline</td><td className="p-3 font-mono text-cyan-300">/pattern/m</td><td className="p-3 font-mono text-cyan-300">re.MULTILINE or re.M</td></tr>
-                  <tr><td className="p-3">Dot matches newline</td><td className="p-3 font-mono text-cyan-300">/pattern/s</td><td className="p-3 font-mono text-cyan-300">re.DOTALL or re.S</td></tr>
-                  <tr><td className="p-3">Verbose mode</td><td className="p-3 text-muted-foreground">Not supported</td><td className="p-3 font-mono text-cyan-300">re.VERBOSE or re.X</td></tr>
+                  <tr><td className="p-3">Case insensitive</td><td className="p-3 font-mono text-cyan-300">/pattern/i</td><td className="p-3 font-mono text-cyan-300">re.IGNORECASE</td></tr>
+                  <tr><td className="p-3">Global (find all)</td><td className="p-3 font-mono text-cyan-300">/pattern/g</td><td className="p-3 font-mono text-cyan-300">re.findall()</td></tr>
+                  <tr><td className="p-3">Multiline</td><td className="p-3 font-mono text-cyan-300">/pattern/m</td><td className="p-3 font-mono text-cyan-300">re.MULTILINE</td></tr>
+                  <tr><td className="p-3">Dot matches newline</td><td className="p-3 font-mono text-cyan-300">/pattern/s</td><td className="p-3 font-mono text-cyan-300">re.DOTALL</td></tr>
+                  <tr><td className="p-3">Verbose mode</td><td className="p-3 text-muted-foreground">Not available</td><td className="p-3 font-mono text-cyan-300">re.VERBOSE</td></tr>
                 </tbody>
               </table>
-            </div>
-
-            <p className="mt-4">Python has a unique verbose mode (re.VERBOSE) that lets you write regex across multiple lines with comments — a huge help for complex patterns:</p>
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-1">
-              <p>pattern = re.compile(r"""</p>
-              <p className="pl-4">\d{"{4}"}    # year</p>
-              <p className="pl-4">-          # separator</p>
-              <p className="pl-4">\d{"{2}"}    # month</p>
-              <p className="pl-4">-          # separator</p>
-              <p className="pl-4">\d{"{2}"}    # day</p>
-              <p>""", re.VERBOSE)</p>
             </div>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Finding Matches: Different Functions</h2>
-            <p>This is where JavaScript and Python diverge the most. Python has several specialized functions while JavaScript has just a few methods on strings and RegExp objects.</p>
 
             <h3 className="text-base font-semibold text-foreground mt-5 mb-2">Test if a Match Exists</h3>
-            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript</p>
-              <p>/\d+/.test("abc123")  // true</p>
-              <p className="mt-2 text-muted-foreground"># Python</p>
-              <p>bool(re.search(r"\d+", "abc123"))  # True</p>
-              <p>bool(re.match(r"\d+", "abc123"))   # False (match checks from start)</p>
-            </div>
+            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.testMatch}</div>
             <p className="mt-3">This is a critical difference. Python's re.match() only checks at the beginning of the string. re.search() checks anywhere. JavaScript's .test() works like re.search() — it finds a match anywhere in the string.</p>
 
             <h3 className="text-base font-semibold text-foreground mt-5 mb-2">Find All Matches</h3>
-            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript - returns array of matches</p>
-              <p>"a1 b2 c3".match(/\d/g)  // ["1", "2", "3"]</p>
-              <p className="mt-2 text-muted-foreground"># Python - findall returns list</p>
-              <p>re.findall(r"\d", "a1 b2 c3")  # ["1", "2", "3"]</p>
-            </div>
+            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.findAll}</div>
 
             <h3 className="text-base font-semibold text-foreground mt-5 mb-2">Replace</h3>
-            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript</p>
-              <p>"hello world".replace(/\w+/g, "x")  // "x x"</p>
-              <p className="mt-2 text-muted-foreground"># Python</p>
-              <p>re.sub(r"\w+", "x", "hello world")  # "x x"</p>
-            </div>
+            <div className="mt-2 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.replace}</div>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Named Capture Groups</h2>
-            <p>Both languages support named groups but with slightly different syntax.</p>
-
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript - uses ?{"<name>"}</p>
-              <p>{"const m = '2025-01-15'.match(/(?<year>\\d{4})-(?<month>\\d{2})-(?<day>\\d{2})/);"}</p>
-              <p>m.groups.year   // "2025"</p>
-              <p>m.groups.month  // "01"</p>
-              <p className="mt-3 text-muted-foreground"># Python - uses ?P{"<name>"}</p>
-              <p>{"m = re.match(r'(?P<year>\\d{4})-(?P<month>\\d{2})-(?P<day>\\d{2})', '2025-01-15')"}</p>
-              <p>m.group("year")   # "2025"</p>
-              <p>m.group("month")  # "01"</p>
-            </div>
-            <p className="mt-3">The pattern syntax is different — JavaScript uses {"(?<name>)"} while Python uses {"(?P<name>)"}. The P in Python's syntax is a legacy convention. When writing cross-language patterns, always check this difference first.</p>
+            <p>Both languages support named groups but with slightly different syntax. JavaScript uses (?&lt;name&gt;) while Python uses (?P&lt;name&gt;).</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.namedJS}</div>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.namedPY}</div>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Lookbehind Support</h2>
-            <p>This is an important difference that trips up many developers. Lookbehinds let you match something that is preceded by a pattern, without including the preceding pattern in the match.</p>
-
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript (ES2018+) - supports variable-length lookbehind</p>
-              <p>{"'$100 and €200'.match(/(?<=[€$])\\d+/g)  // ['100', '200']"}</p>
-              <p className="mt-2 text-muted-foreground"># Python - supports lookbehind but must be fixed-length</p>
-              <p>{"re.findall(r'(?<=[€$])\\d+', '$100 and €200')"}</p>
-              <p className="text-muted-foreground mt-1">{"# This works, but r'(?<=[€$]{1,2})\\d+' would FAIL in Python"}</p>
-            </div>
-            <p className="mt-3">Python requires lookbehind patterns to be fixed-width — you cannot use quantifiers like + or * inside them. JavaScript ES2018 removed this limitation. If you need variable-length lookbehinds, JavaScript is your better option.</p>
+            <p>Lookbehinds let you match something preceded by a pattern, without including the preceding part in the match. This is where the two languages have a meaningful difference.</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.lookbehindJS}</div>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.lookbehindPY}</div>
+            <p className="mt-3">Python requires lookbehind patterns to be fixed-width — quantifiers like + or * are not allowed inside them. JavaScript ES2018 removed this limitation. If you need variable-length lookbehinds, JavaScript is the better option.</p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Unicode Handling</h2>
-            <p>Python 3 strings are Unicode by default, so regex handles international characters naturally. JavaScript requires the u flag for proper Unicode support, particularly for characters outside the Basic Multilingual Plane (like emoji).</p>
-
-            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground space-y-2">
-              <p className="text-muted-foreground">// JavaScript - needs u flag for emoji and astral characters</p>
-              <p>/^.$/u.test("😀")  // true with u flag</p>
-              <p>/^.$/.test("😀")   // false without u flag (emoji = 2 code units)</p>
-              <p className="mt-2 text-muted-foreground"># Python 3 - Unicode works naturally</p>
-              <p>bool(re.match(r"^.$", "😀"))  # True</p>
-            </div>
+            <p>Python 3 strings are Unicode by default. JavaScript requires the u flag for proper Unicode support, particularly for characters outside the Basic Multilingual Plane like emoji.</p>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.unicodeJS}</div>
+            <div className="mt-3 rounded-lg bg-white/5 border border-white/10 p-4 font-mono text-xs text-foreground whitespace-pre-line">{CODE.unicodePY}</div>
           </section>
 
           <section>
@@ -173,13 +128,13 @@ export default function BlogPost4() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-muted-foreground">
-                  <tr><td className="p-3">Pattern literal</td><td className="p-3 font-mono text-cyan-300">/pattern/</td><td className="p-3 font-mono text-cyan-300">r"pattern"</td></tr>
+                  <tr><td className="p-3">Write a pattern</td><td className="p-3 font-mono text-cyan-300">/pattern/</td><td className="p-3 font-mono text-cyan-300">r"pattern"</td></tr>
                   <tr><td className="p-3">Test for match</td><td className="p-3 font-mono text-cyan-300">.test(str)</td><td className="p-3 font-mono text-cyan-300">re.search()</td></tr>
-                  <tr><td className="p-3">Match from start</td><td className="p-3 font-mono text-cyan-300">/^pattern/.test()</td><td className="p-3 font-mono text-cyan-300">re.match()</td></tr>
+                  <tr><td className="p-3">Match from start</td><td className="p-3 font-mono text-cyan-300">/^p/.test()</td><td className="p-3 font-mono text-cyan-300">re.match()</td></tr>
                   <tr><td className="p-3">Find all matches</td><td className="p-3 font-mono text-cyan-300">.match(/p/g)</td><td className="p-3 font-mono text-cyan-300">re.findall()</td></tr>
-                  <tr><td className="p-3">Replace</td><td className="p-3 font-mono text-cyan-300">.replace(/p/g, x)</td><td className="p-3 font-mono text-cyan-300">re.sub(p, x, str)</td></tr>
-                  <tr><td className="p-3">Split</td><td className="p-3 font-mono text-cyan-300">.split(/pattern/)</td><td className="p-3 font-mono text-cyan-300">re.split(p, str)</td></tr>
-                  <tr><td className="p-3">Named groups</td><td className="p-3 font-mono text-cyan-300">{"(?<name>)"}</td><td className="p-3 font-mono text-cyan-300">{"(?P<name>)"}</td></tr>
+                  <tr><td className="p-3">Replace</td><td className="p-3 font-mono text-cyan-300">.replace(/p/g, x)</td><td className="p-3 font-mono text-cyan-300">re.sub(p, x, s)</td></tr>
+                  <tr><td className="p-3">Split</td><td className="p-3 font-mono text-cyan-300">.split(/p/)</td><td className="p-3 font-mono text-cyan-300">re.split(p, s)</td></tr>
+                  <tr><td className="p-3">Named groups</td><td className="p-3 font-mono text-cyan-300">(?&lt;name&gt;)</td><td className="p-3 font-mono text-cyan-300">(?P&lt;name&gt;)</td></tr>
                 </tbody>
               </table>
             </div>
@@ -187,9 +142,9 @@ export default function BlogPost4() {
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-3">Which Should You Use?</h2>
-            <p>The honest answer is — use whichever language you are working in. The core regex knowledge transfers completely. The differences are mostly in method names and a few syntax details that you will memorize quickly.</p>
-            <p className="mt-3">That said, Python wins for data processing scripts where verbose mode and re.compile() make complex patterns much more maintainable. JavaScript wins for browser-based validation, real-time input filtering, and cases where you need variable-length lookbehinds.</p>
-            <p className="mt-3">If you are ever unsure about a specific pattern in either language, use the <Link href="/generator" className="text-cyan-400 hover:underline">AI Regex Generator</Link> — it shows you the pattern for all flavors at once, including JavaScript and Python, so you can see the differences immediately.</p>
+            <p>Use whichever language you are already working in. The core regex knowledge transfers completely. The differences are mostly method names and a few syntax details you will memorize quickly.</p>
+            <p className="mt-3">Python wins for data processing scripts where verbose mode and re.compile() make complex patterns more maintainable. JavaScript wins for browser-based validation, real-time input filtering, and cases where you need variable-length lookbehinds.</p>
+            <p className="mt-3">If you are unsure about a pattern in either language, use the <Link href="/generator" className="text-cyan-400 hover:underline">AI Regex Generator</Link> — it shows you the pattern for JavaScript, Python, PCRE, and Java simultaneously.</p>
           </section>
 
         </div>

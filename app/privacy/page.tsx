@@ -107,8 +107,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-foreground mb-3">10. Contact Us</h2>
             <p>
               For any privacy-related questions, data requests, or concerns, please contact us at{" "}
-              <a href="mailto:privacy@airegexstudio.com" className="text-cyan-400 hover:underline">
-                privacy@airegexstudio.com
+              <a href="mailto:faisalagentai@gmail.com" className="text-cyan-400 hover:underline">
+                faisalagentai@gmail.com
               </a>
               . We aim to respond to all requests within 5 business days.
             </p>

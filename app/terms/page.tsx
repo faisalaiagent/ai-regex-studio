@@ -73,8 +73,8 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-foreground mb-3">8. Contact</h2>
             <p>
               Questions about these terms? Contact us at{" "}
-              <a href="mailto:legal@airegexstudio.com" className="text-cyan-400 hover:underline">
-                legal@airegexstudio.com
+              <a href="mailto:faisalagentai@gmail.com" className="text-cyan-400 hover:underline">
+                faisalagentai@gmail.com
               </a>
             </p>
           </section>

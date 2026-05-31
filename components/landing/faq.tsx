@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const FAQS = [
   {
     q: "What AI model powers the generator?",
-    a: "AI Regex Studio uses Google's Gemini 1.5 Flash model, which is fast, accurate, and free to use at generous quotas.",
+    a: "AI Regex Studio uses Groq AI running Llama 3.3 70B — one of the most capable open-source language models available. Groq is chosen for its exceptional speed, reliability, and high-quality technical output.",
   },
   {
     q: "Do I need an account to use it?",
@@ -25,10 +25,6 @@ const FAQS = [
   {
     q: "Is there an API?",
     a: "Pro users get REST API access to generate and explain regex patterns programmatically.",
-  },
-  {
-    q: "How do I get Google AdSense approval?",
-    a: "This question is outside our scope — but AI Regex Studio is a great example of a utility app that qualifies for AdSense approval due to high developer traffic and organic search value.",
   },
 ];
 

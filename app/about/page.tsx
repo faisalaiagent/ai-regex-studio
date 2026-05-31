@@ -56,8 +56,8 @@ export default function AboutPage() {
                     </span>
                     <span className="flex items-center gap-1">
                       <Mail className="h-3 w-3" />
-                      <a href="mailto:contact@airegexstudio.com" className="hover:text-foreground transition-colors">
-                        contact@airegexstudio.com
+                      <a href="mailto:faisalagentai@gmail.com" className="hover:text-foreground transition-colors">
+                        faisalagentai@gmail.com
                       </a>
                     </span>
                     <span className="flex items-center gap-1">
@@ -137,7 +137,7 @@ export default function AboutPage() {
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <a
-                href="mailto:contact@airegexstudio.com"
+                href="mailto:faisalagentai@gmail.com"
                 className="inline-flex items-center gap-2 text-sm font-medium text-black bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
               >
                 <Mail className="h-4 w-4" />

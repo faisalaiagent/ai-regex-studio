@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail, Clock, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { Mail, Clock, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -12,36 +12,59 @@ export default function ContactPage() {
     message: "",
   });
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (status === "error") setStatus("idle");
   };
 
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    if (!form.name || !form.email || !form.subject || !form.message) {
+    // Client-side validation
+    if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
+      setErrorMsg("Please fill in all fields before sending.");
+      setStatus("error");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setErrorMsg("Please enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+    if (form.message.trim().length < 10) {
+      setErrorMsg("Message must be at least 10 characters.");
       setStatus("error");
       return;
     }
 
     setStatus("sending");
+    setErrorMsg("");
 
-    // Opens the user's mail client with pre-filled content
-    const mailtoLink = `mailto:faisalagentai@gmail.com?subject=${encodeURIComponent(
-      form.subject
-    )}&body=${encodeURIComponent(
-      `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
-    )}`;
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    window.location.href = mailtoLink;
+      const data = await response.json();
 
-    setTimeout(() => {
+      if (!response.ok || !data.success) {
+        setErrorMsg(data.error ?? "Failed to send message. Please try again.");
+        setStatus("error");
+        return;
+      }
+
       setStatus("success");
       setForm({ name: "", email: "", subject: "", message: "" });
-    }, 1000);
+    } catch {
+      setErrorMsg("Network error. Please check your connection and try again.");
+      setStatus("error");
+    }
   };
 
   return (
@@ -59,7 +82,7 @@ export default function ContactPage() {
 
         <div className="grid gap-12 md:grid-cols-[1fr_1.4fr] items-start">
 
-          {/* Left — Info */}
+          {/* ── Left — Info ── */}
           <div>
             <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3">
               Contact
@@ -68,8 +91,8 @@ export default function ContactPage() {
               Get in touch
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-              Have a question, feature request, or just want to say hello? I would love to hear from
-              you.
+              Have a question, feature request, or just want to say hello? We would love to hear
+              from you.
             </p>
 
             <div className="space-y-4">
@@ -100,16 +123,17 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right — Form */}
+          {/* ── Right — Form ── */}
           <div className="rounded-2xl border border-white/10 bg-card/30 p-8">
 
             {status === "success" ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <CheckCircle className="h-12 w-12 text-green-400 mb-4" />
+                <CheckCircle className="h-14 w-14 text-green-400 mb-4" />
                 <h3 className="text-lg font-bold text-foreground mb-2">Message sent!</h3>
-                <p className="text-sm text-muted-foreground mb-6">
-                  Your email client opened with the message pre-filled. Shah Faisal will get back to
-                  you within 24 hours.
+                <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+                  Thank you for reaching out. Shah Faisal will get back to you at{" "}
+                  <span className="text-foreground font-medium">{form.email || "your email"}</span>{" "}
+                  within 24 hours.
                 </p>
                 <button
                   onClick={() => setStatus("idle")}
@@ -125,7 +149,7 @@ export default function ContactPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1.5">
-                      Your name
+                      Your name <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -138,7 +162,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1.5">
-                      Email address
+                      Email address <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="email"
@@ -154,7 +178,7 @@ export default function ContactPage() {
                 {/* Subject */}
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1.5">
-                    Subject
+                    Subject <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -169,7 +193,7 @@ export default function ContactPage() {
                 {/* Message */}
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1.5">
-                    Message
+                    Message <span className="text-red-400">*</span>
                   </label>
                   <textarea
                     name="message"
@@ -181,21 +205,28 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Error */}
+                {/* Error message */}
                 {status === "error" && (
                   <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                    Please fill in all fields before sending.
+                    {errorMsg}
                   </div>
                 )}
 
-                {/* Submit */}
+                {/* Submit button */}
                 <button
                   onClick={handleSubmit}
                   disabled={status === "sending"}
-                  className="w-full rounded-xl bg-foreground text-background font-semibold text-sm py-3 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full rounded-xl bg-foreground text-background font-semibold text-sm py-3 hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {status === "sending" ? "Opening mail client..." : "Send message"}
+                  {status === "sending" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send message"
+                  )}
                 </button>
 
                 <p className="text-xs text-center text-muted-foreground">

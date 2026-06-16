@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Mail, Clock, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 
+const WEB3FORMS_KEY = "b04f3183-29a5-427c-8c9f-cf1b4a63d8d9";
+
 export default function ContactPage() {
   const [form, setForm] = useState({
     name: "",
@@ -18,13 +20,16 @@ export default function ContactPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (status === "error") setStatus("idle");
+    if (status === "error") {
+      setStatus("idle");
+      setErrorMsg("");
+    }
   };
 
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    // Client-side validation
+    // Validate
     if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
       setErrorMsg("Please fill in all fields before sending.");
       setStatus("error");
@@ -35,34 +40,45 @@ export default function ContactPage() {
       setStatus("error");
       return;
     }
-    if (form.message.trim().length < 10) {
-      setErrorMsg("Message must be at least 10 characters.");
-      setStatus("error");
-      return;
-    }
 
     setStatus("sending");
     setErrorMsg("");
 
     try {
-      const response = await fetch("/api/contact", {
+      // Call Web3Forms directly from browser — no server needed
+      const response = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          name: form.name,
+          email: form.email,
+          subject: `[AI Regex Studio] ${form.subject}`,
+          message: `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`,
+          from_name: "AI Regex Studio",
+          botcheck: "",
+        }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (!response.ok || !data.success) {
-        setErrorMsg(data.error ?? "Failed to send message. Please try again.");
+      if (result.success === true) {
+        setStatus("success");
+        setForm({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setErrorMsg(
+          result.message ||
+            "Failed to send. Please email faisalagentai@gmail.com directly."
+        );
         setStatus("error");
-        return;
       }
-
-      setStatus("success");
-      setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
-      setErrorMsg("Network error. Please check your connection and try again.");
+      setErrorMsg(
+        "Could not connect. Please email faisalagentai@gmail.com directly."
+      );
       setStatus("error");
     }
   };
@@ -71,7 +87,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-background">
       <main className="container max-w-5xl py-16">
 
-        {/* Back link */}
+        {/* Back */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-10"
@@ -82,7 +98,7 @@ export default function ContactPage() {
 
         <div className="grid gap-12 md:grid-cols-[1fr_1.4fr] items-start">
 
-          {/* ── Left — Info ── */}
+          {/* Left */}
           <div>
             <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3">
               Contact
@@ -123,15 +139,14 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* ── Right — Form ── */}
+          {/* Right — Form */}
           <div className="rounded-2xl border border-white/10 bg-card/30 p-8">
-
             {status === "success" ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <CheckCircle className="h-14 w-14 text-green-400 mb-4" />
                 <h3 className="text-lg font-bold text-foreground mb-2">Message sent!</h3>
                 <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                  Thank you for reaching out. Shah Faisal will get back to you at{" "}
+                  Thank you for reaching out. Shah Faisal will reply to{" "}
                   <span className="text-foreground font-medium">{form.email || "your email"}</span>{" "}
                   within 24 hours.
                 </p>
@@ -145,7 +160,6 @@ export default function ContactPage() {
             ) : (
               <div className="space-y-5">
 
-                {/* Name + Email row */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-medium text-foreground mb-1.5">
@@ -175,7 +189,6 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* Subject */}
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1.5">
                     Subject <span className="text-red-400">*</span>
@@ -190,7 +203,6 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Message */}
                 <div>
                   <label className="block text-xs font-medium text-foreground mb-1.5">
                     Message <span className="text-red-400">*</span>
@@ -205,7 +217,6 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* Error message */}
                 {status === "error" && (
                   <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
                     <AlertCircle className="h-3.5 w-3.5 shrink-0" />
@@ -213,7 +224,6 @@ export default function ContactPage() {
                   </div>
                 )}
 
-                {/* Submit button */}
                 <button
                   onClick={handleSubmit}
                   disabled={status === "sending"}
